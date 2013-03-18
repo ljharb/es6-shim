@@ -64,4 +64,52 @@ describe('Array', function() {
       expect(find.length).to.equal(1);
     });
   });
+
+  describe('Array#findIndex()', function() {
+    var findIndex = Array.prototype.findIndex;
+
+    it('throws a TypeError if not given a function predicate', function() {
+      expect(function() {
+        return [].findIndex();
+      }).not.to.throw(TypeError);
+      expect(function() {
+        return [1, 2, 3].findIndex();
+      }).to.throw(TypeError);
+    });
+
+    it('finds the first item\'s index', function () {
+      var numbers = [1, 2, 3, 4, 5];
+      numbers = numbers.concat(numbers);
+      numbers.forEach(function (number) {
+        var calls = 0;
+        var predicate = function (item) {
+          calls += 1;
+          return item === number;
+        };
+        expect(numbers.findIndex(predicate)).to.equal(number - 1);
+        expect(calls).to.equal(number);
+      });
+    });
+
+    it('returns undefined if length is not defined', function() {
+      [{}, 5].forEach(function (item) {
+        expect(findIndex.call(item, function() { return true; })).to.equal(undefined);
+      });
+    });
+
+    it('returns -1 if length is zero', function() {
+      [[], { length: 0 }].forEach(function (item) {
+        expect(findIndex.call(item, function() { return true; })).to.equal(-1);
+      });
+    });
+
+    it('returns -1 if not found', function() {
+      expect([1, 2, 3].findIndex(function (item) { return item === 4; })).to.equal(-1);
+      expect(findIndex.call({ 0: 1, 1: 2, length: 2 }, function (item) { return item === 4; })).to.equal(-1);
+    });
+
+    it('has a length property of 1', function() {
+      expect(findIndex.length).to.equal(1);
+    });
+  });
 });

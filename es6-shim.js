@@ -173,7 +173,32 @@ var main = function() {
         k += 1;
       }
       return undefined;
-    }
+    },
+    // https://gist.github.com/rwldrn/5079427
+    findIndex: function (predicate/*, thisArg*/) {
+      if (!this) { return undefined; }
+      var len = this.length;
+      if (typeof len === 'undefined') {
+        return undefined;
+      } else if (len === 0) {
+        return -1;
+      }
+      len = ~~len;
+      if (_toString(predicate) !== '[object Function]') {
+        throw new TypeError('predicate must be a function');
+      }
+      var thisArg;
+      if (arguments.length > 1) {
+        thisArg = arguments[1];
+      }
+      var context = thisArg || undefined, k = 0, result;
+      while (k < len) {
+        if (!this.hasOwnProperty(k)) { return undefined; }
+        if (predicate.call(context, this[k], k, this)) { return k; }
+        k += 1;
+      }
+      return -1;
+    },
   });
 
   defineProperties(Number, {
