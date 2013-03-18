@@ -5,6 +5,7 @@
 var main = function() {
   'use strict';
 
+  var undefined; // just in case, for ES3 browsers.
   var globals = (typeof global === 'undefined') ? window : global;
   var global_isFinite = globals.isFinite;
   var isES5 = !!Object.defineProperty;
@@ -15,6 +16,8 @@ var main = function() {
     }
     return result;
   };
+  // Having a toString local variable name breaks in Opera so use _toString.
+  var _toString = Function.prototype.call.bind(Object.prototype.toString);
 
   // Define configurable, writable and non-enumerable props
   // if they don’t exist.
@@ -146,6 +149,30 @@ var main = function() {
 
     of: function() {
       return Array.prototype.slice.call(arguments);
+    }
+  });
+
+  defineProperties(Array.prototype, {
+    // https://gist.github.com/rwldrn/5079436
+    find: function (predicate/*, thisArg*/) {
+      if (!this) { return undefined; }
+      var len = this.length;
+      if (!len || len === 0) { return undefined; }
+      if (_toString(predicate) !== '[object Function]') {
+        throw new TypeError('predicate must be a function');
+      }
+      len = ~~len;
+      var thisArg;
+      if (arguments.length > 1) {
+        thisArg = arguments[1];
+      }
+      var context = thisArg || undefined, k = 0, result;
+      while (k < len) {
+        if (!this.hasOwnProperty(k)) { return undefined; }
+        if (predicate.call(context, this[k], k, this)) { return this[k]; }
+        k += 1;
+      }
+      return undefined;
     }
   });
 
