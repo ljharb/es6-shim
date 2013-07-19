@@ -594,7 +594,7 @@
 
       trunc: function(value) {
         var number = Number(value);
-        return number < 0 ? -Math.floor(-number) : Math.floor(number);
+        return number < 0 ? Math.ceil(number) : Math.floor(number);
       },
 
       imul: function(x, y) {
