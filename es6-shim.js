@@ -1777,7 +1777,8 @@
 
             defineProperties(set, {
               '[[SetData]]': null,
-              _storage: emptyObject()
+              _storage: emptyObject(),
+              _storageOrder: []
             });
 
             // Optionally initialize map from iterable
@@ -1809,7 +1810,7 @@
           var ensureMap = function ensureMap(set) {
             if (!set['[[SetData]]']) {
               var m = set['[[SetData]]'] = new collectionShims.Map();
-              Object.keys(set._storage).forEach(function (k) {
+              set._storageOrder.map(String).forEach(function (k) {
                 // fast check for leading '$'
                 if (k.charCodeAt(0) === 36) {
                   k = k.slice(1);
@@ -1818,7 +1819,7 @@
                 }
                 m.set(k, k);
               });
-              set._storage = null; // free old backing storage
+              set._storage = set._storageOrder = null; // free old backing storage
             }
           };
 
@@ -1849,6 +1850,7 @@
               var fkey;
               if (this._storage && (fkey = fastkey(key)) !== null) {
                 this._storage[fkey] = true;
+                this._storageOrder.push(fkey);
                 return;
               }
               ensureMap(this);
@@ -1859,6 +1861,7 @@
               var fkey;
               if (this._storage && (fkey = fastkey(key)) !== null) {
                 delete this._storage[fkey];
+                this._storageOrder.splice(this._storageOrder.indexOf(fkey), 1);
                 return;
               }
               ensureMap(this);
@@ -1868,6 +1871,7 @@
             clear: function () {
               if (this._storage) {
                 this._storage = emptyObject();
+                this._storageOrder = [];
                 return;
               }
               return this['[[SetData]]'].clear();
