@@ -1777,7 +1777,8 @@
 
             defineProperties(set, {
               '[[SetData]]': null,
-              _storage: emptyObject()
+              _storage: emptyObject(),
+              _storageCounter: 0
             });
 
             // Optionally initialize map from iterable
@@ -1809,7 +1810,9 @@
           var ensureMap = function ensureMap(set) {
             if (!set['[[SetData]]']) {
               var m = set['[[SetData]]'] = new collectionShims.Map();
-              Object.keys(set._storage).forEach(function (k) {
+              var keys = Object.keys(set._storage);
+              keys.sort(function (a, b) { return set._storage[a] - set._storage[b]; });
+              keys.forEach(function (k) {
                 // fast check for leading '$'
                 if (k.charCodeAt(0) === 36) {
                   k = k.slice(1);
@@ -1819,6 +1822,7 @@
                 m.set(k, k);
               });
               set._storage = null; // free old backing storage
+              set._storageCounter = 0;
             }
           };
 
@@ -1839,7 +1843,7 @@
             has: function (key) {
               var fkey;
               if (this._storage && (fkey = fastkey(key)) !== null) {
-                return !!this._storage[fkey];
+                return typeof this._storage[fkey] === 'number';
               }
               ensureMap(this);
               return this['[[SetData]]'].has(key);
@@ -1848,7 +1852,8 @@
             add: function (key) {
               var fkey;
               if (this._storage && (fkey = fastkey(key)) !== null) {
-                this._storage[fkey] = true;
+                this._storage[fkey] = this._storageCounter;
+                this._storageCounter += 1;
                 return;
               }
               ensureMap(this);
@@ -1868,6 +1873,7 @@
             clear: function () {
               if (this._storage) {
                 this._storage = emptyObject();
+                this._storageCounter = 0;
                 return;
               }
               return this['[[SetData]]'].clear();
