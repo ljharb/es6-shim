@@ -275,6 +275,8 @@ describe('RegExp', function () {
 
     it('has an undefined prototype', function () {
       expect(RegExp.prototype.toString.prototype).to.equal(undefined);
+
+      expect(function () { return new RegExp.prototype.toString(); }).to['throw'](TypeError);
     });
 
     it('works on regexes', function () {

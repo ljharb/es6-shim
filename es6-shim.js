@@ -1787,7 +1787,16 @@
   });
   if (!regexToStringIsGeneric || !regexToStringSupportsGenericFlags) {
     var origRegExpToString = RegExp.prototype.toString;
+    var origShimProto;
     defineProperty(RegExp.prototype, 'toString', function toString() {
+      try {
+        toString.prototype = origShimProto;
+        if (this instanceof toString) {
+          throw new TypeError('RegExp.prototype.toString is not a constructor');
+        }
+      } finally {
+        toString.prototype = void 0;
+      }
       var R = ES.RequireObjectCoercible(this);
       if (Type.regex(R)) {
         return _call(origRegExpToString, R);
@@ -1797,6 +1806,7 @@
       return '/' + pattern + '/' + flags;
     }, true);
     Value.preserveToString(RegExp.prototype.toString, origRegExpToString);
+    origShimProto = RegExp.prototype.toString.prototype;
     RegExp.prototype.toString.prototype = void 0;
   }
 
